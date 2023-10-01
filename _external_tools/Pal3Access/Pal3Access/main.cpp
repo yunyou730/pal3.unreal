@@ -5,6 +5,8 @@
 
 #include "headers/CpkFileSystem.h"
 
+#include "headers/mv3/Mv3Reader.h"
+
 
 void CpkArchiveTestCase()
 {
@@ -35,6 +37,9 @@ int main()
 
 	uint32_t len;
 	uint8_t* data = archive->GetFileBytesFromFile("ROLE\\101\\C01.MV3",len);
+
+	pal3::Mv3Reader reader(data,len);
+	pal3::Mv3* mv3 = reader.Read();
 
 	printf("p2\n");
 	return 0;

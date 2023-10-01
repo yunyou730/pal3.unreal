@@ -106,6 +106,9 @@
     <ClInclude Include="headers\mv3\Mv3Reader.h">
       <Filter>headers\mv3</Filter>
     </ClInclude>
+    <ClInclude Include="headers\GameBoxType.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

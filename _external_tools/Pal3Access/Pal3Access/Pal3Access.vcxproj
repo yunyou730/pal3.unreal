@@ -151,6 +151,7 @@
     <ClInclude Include="headers\cpk\CpkUtils.h" />
     <ClInclude Include="headers\cpk\CrcHash.h" />
     <ClInclude Include="headers\encoding\Encoding.h" />
+    <ClInclude Include="headers\GameBoxType.h" />
     <ClInclude Include="headers\lzo\lzo1.h" />
     <ClInclude Include="headers\lzo\lzo1a.h" />
     <ClInclude Include="headers\lzo\lzo1b.h" />
