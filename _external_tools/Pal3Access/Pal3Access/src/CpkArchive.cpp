@@ -3,6 +3,7 @@
 #include "../headers/CpkHeader.h"
 #include "../headers/CpkEntity.h"
 #include "../headers/CpkEntry.h"
+#include "../headers/CpkUtils.h"
 //#include "../headers/encoding/Encoding.h"
 #include "./minilzo.h"
 #include <string>
@@ -22,32 +23,7 @@ namespace pal3
 	static const int32_t CPK_VERSION = 1;
 	static const int32_t CPK_HEADER_MAGIC = 0x1A545352;  // CPK header magic label
 	static const int32_t CPK_DEFAULT_MAX_NUM_OF_FILE = 32768; // Max number of files per archive
-	static const std::string PATH_SEQPARATOR = "\\";
-
-	static bool endsWithPathSeparator(const std::string& str) 
-	{
-		fs::path filePath(str);
-		return filePath.string().back() == PATH_SEQPARATOR.back();
-	}
-
-	static bool CreateDirectory(const std::string& path)
-	{
-		//printf("[CreateDirectory] %s\n",path.c_str());
-		try
-		{
-			if (!std::filesystem::exists(path))
-			{
-				std::filesystem::create_directory(path);
-			}
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			printf("Create direction failed %s\n", ex.what());
-			return false;
-		}
-	}
-
+	
 	CpkArchive::CpkArchive(const std::string& filePath, Crc32Hash* crcHash, int codePage)
 	{
 		_filePath = filePath;
@@ -57,6 +33,8 @@ namespace pal3
 
 	CpkArchive::~CpkArchive()
 	{
+		ReleaseEntities();
+		ReleaseEntries();
 		ReleaseMemory();
 	}
 
@@ -144,17 +122,17 @@ namespace pal3
 
 	void CpkArchive::ExtractTo(const std::string& outputFolder)
 	{
-		std::vector<CpkEntry*> rootEntries = BuildEntryTree();
-		CreateDirectory(outputFolder);
-		ExtractToInternal(outputFolder,rootEntries);
+		_rootEntries = BuildEntryTree();
+		CpkUtils::CreateDirectory(outputFolder);
+		ExtractToInternal(outputFolder, _rootEntries);
 	}
 
 	void CpkArchive::ExtractToInternal(const std::string& outputFolder,const std::vector<CpkEntry*>& nodes)
 	{
 		std::string path = outputFolder;
-		if (!endsWithPathSeparator(path))
+		if (!CpkUtils::endsWithPathSeparator(path))
 		{
-			path = path + PATH_SEQPARATOR;
+			path = path + CpkUtils::PATH_SEQPARATOR;
 		}
 
 		uint32_t rawLen = 0;
@@ -166,7 +144,7 @@ namespace pal3
 
 			if (node->IsDirectory)
 			{
-				CreateDirectory(fullPath);
+				CpkUtils::CreateDirectory(fullPath);
 				ExtractToInternal(outputFolder, node->Children);
 			}
 			else
@@ -328,7 +306,7 @@ namespace pal3
 			CpkEntry* entry = nullptr;
 			if (childEntity->IsDirectory())
 			{
-				entry = new CpkEntry(virtualPath, true, GetChildren(childEntity->CRC, virtualPath + PATH_SEQPARATOR));
+				entry = new CpkEntry(virtualPath, true, GetChildren(childEntity->CRC, virtualPath + CpkUtils::PATH_SEQPARATOR));
 			}
 			else
 			{
@@ -367,6 +345,43 @@ namespace pal3
 			len = end - start + 1;
 			bNeedDealloc = false;
 			return _archiveData + start;
+		}
+	}
+
+	void CpkArchive::ReleaseEntities()
+	{
+		for (auto it : _entities)
+		{
+			CpkEntity* entity = it.second;
+			delete entity;
+		}
+		_entities.clear();
+	}
+
+	void CpkArchive::ReleaseEntries()
+	{
+		for (auto it : _rootEntries)
+		{
+			auto entry = it;
+			ReleaseEntriesInternal(entry);
+		}
+	}
+
+	void CpkArchive::ReleaseEntriesInternal(CpkEntry* entry)
+	{
+		if (entry->IsDirectory)
+		{
+			for (auto it : entry->Children)
+			{
+				CpkEntry* childEntry = it;
+				ReleaseEntriesInternal(childEntry);
+			}
+			entry->Children.clear();
+			delete entry;
+		}
+		else
+		{
+			delete entry;
 		}
 	}
 }

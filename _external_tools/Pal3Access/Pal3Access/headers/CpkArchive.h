@@ -39,6 +39,12 @@ namespace pal3
 		void BuildFileNameMap();
 		std::vector<CpkEntry*> GetChildren(uint32_t fatherCRC, std::string rootPath);
 
+
+	private:
+		void ReleaseEntities();
+		void ReleaseEntries();
+		void ReleaseEntriesInternal(CpkEntry* entry);
+
 	private:
 		std::string _filePath;
 		Crc32Hash*	_crcHash;
@@ -59,6 +65,9 @@ namespace pal3
 		// Hold all binary data
 		uint8_t* _archiveData = nullptr;
 		size_t _archiveDataLen = 0;
+
+		// Root entries, for extract 
+		std::vector<CpkEntry*> _rootEntries;
 
 		bool _bEnableLog = false;
 	};
