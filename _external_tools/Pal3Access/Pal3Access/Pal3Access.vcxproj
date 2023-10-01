@@ -143,13 +143,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="headers\CpkArchive.h" />
-    <ClInclude Include="headers\CpkEntity.h" />
-    <ClInclude Include="headers\CpkEntry.h" />
     <ClInclude Include="headers\CpkFileSystem.h" />
-    <ClInclude Include="headers\CpkHeader.h" />
-    <ClInclude Include="headers\CpkUtils.h" />
-    <ClInclude Include="headers\CrcHash.h" />
+    <ClInclude Include="headers\cpk\CpkArchive.h" />
+    <ClInclude Include="headers\cpk\CpkEntity.h" />
+    <ClInclude Include="headers\cpk\CpkEntry.h" />
+    <ClInclude Include="headers\cpk\CpkHeader.h" />
+    <ClInclude Include="headers\cpk\CpkUtils.h" />
+    <ClInclude Include="headers\cpk\CrcHash.h" />
     <ClInclude Include="headers\encoding\Encoding.h" />
     <ClInclude Include="headers\lzo\lzo1.h" />
     <ClInclude Include="headers\lzo\lzo1a.h" />
@@ -164,17 +164,20 @@
     <ClInclude Include="headers\lzo\lzodefs.h" />
     <ClInclude Include="headers\lzo\lzoutil.h" />
     <ClInclude Include="headers\lzo\lzo_asm.h" />
-    <ClInclude Include="src\minilzo.h" />
+    <ClInclude Include="headers\mv3\Mv3.h" />
+    <ClInclude Include="headers\mv3\Mv3Reader.h" />
+    <ClInclude Include="src\cpk\minilzo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\CpkArchive.cpp" />
-    <ClCompile Include="src\CpkEntity.cpp" />
     <ClCompile Include="src\CpkFileSystem.cpp" />
-    <ClCompile Include="src\CpkUtils.cpp" />
-    <ClCompile Include="src\CrcHash.cpp" />
+    <ClCompile Include="src\cpk\CpkArchive.cpp" />
+    <ClCompile Include="src\cpk\CpkUtils.cpp" />
+    <ClCompile Include="src\cpk\CrcHash.cpp" />
+    <ClCompile Include="src\cpk\minilzo.c" />
     <ClCompile Include="src\encoding\Encoding.cpp" />
-    <ClCompile Include="src\minilzo.c" />
+    <ClCompile Include="src\mv3\Mv3.cpp" />
+    <ClCompile Include="src\mv3\Mv3Reader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

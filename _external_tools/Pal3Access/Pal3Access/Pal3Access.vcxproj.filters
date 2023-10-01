@@ -20,23 +20,20 @@
     <Filter Include="headers\encoding">
       <UniqueIdentifier>{d981987a-bee1-48c6-b437-d0228e0ecf29}</UniqueIdentifier>
     </Filter>
+    <Filter Include="headers\cpk">
+      <UniqueIdentifier>{dd735243-5fb7-42c8-b963-870b28d909b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\cpk">
+      <UniqueIdentifier>{34c8a0d5-244d-43b6-84b6-f0f5fb920dae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers\mv3">
+      <UniqueIdentifier>{6755c093-d3a5-4fa3-9a43-646fd47e530a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\mv3">
+      <UniqueIdentifier>{562926f4-a74d-439c-b6b5-858149d40f12}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\CpkArchive.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\CpkEntity.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\CrcHash.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\CpkHeader.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\minilzo.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="headers\lzo\lzo1.h">
       <Filter>headers\lzo</Filter>
     </ClInclude>
@@ -79,38 +76,62 @@
     <ClInclude Include="headers\CpkFileSystem.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="headers\CpkEntry.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="headers\encoding\Encoding.h">
       <Filter>headers\encoding</Filter>
     </ClInclude>
-    <ClInclude Include="headers\CpkUtils.h">
-      <Filter>headers</Filter>
+    <ClInclude Include="src\cpk\minilzo.h">
+      <Filter>src\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CpkEntity.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CpkEntry.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CpkHeader.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CpkUtils.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CrcHash.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\cpk\CpkArchive.h">
+      <Filter>headers\cpk</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\mv3\Mv3.h">
+      <Filter>headers\mv3</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\mv3\Mv3Reader.h">
+      <Filter>headers\mv3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CpkEntity.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CrcHash.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CpkArchive.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\minilzo.c">
-      <Filter>src</Filter>
+    <ClCompile Include="src\encoding\Encoding.cpp">
+      <Filter>src\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpk\CpkArchive.cpp">
+      <Filter>src\cpk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpk\CpkUtils.cpp">
+      <Filter>src\cpk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpk\CrcHash.cpp">
+      <Filter>src\cpk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpk\minilzo.c">
+      <Filter>src\cpk</Filter>
     </ClCompile>
     <ClCompile Include="src\CpkFileSystem.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\encoding\Encoding.cpp">
-      <Filter>src\encoding</Filter>
+    <ClCompile Include="src\mv3\Mv3.cpp">
+      <Filter>src\mv3</Filter>
     </ClCompile>
-    <ClCompile Include="src\CpkUtils.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="src\mv3\Mv3Reader.cpp">
+      <Filter>src\mv3</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

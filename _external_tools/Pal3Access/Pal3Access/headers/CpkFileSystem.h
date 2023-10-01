@@ -8,11 +8,18 @@ namespace pal3
 	class CpkFileSystem
 	{
 	public:
-		CpkFileSystem(const std::string& rootPath,Crc32Hash* crcHash);
+		CpkFileSystem();
+		~CpkFileSystem();
+
+		CpkArchive* Mount(const std::string& cpkFilePath);
+
+	private:
+		void ReleaseCRCHash();
+		void ReleaseMountedArchives();
 
 	private:
 		std::map<std::string, CpkArchive*> _cpkArchives;
 		Crc32Hash* _crcHash;
-		std::string _rootPath;
+		int _codePage;
 	};
 }

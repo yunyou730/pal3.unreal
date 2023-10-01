@@ -1,17 +1,16 @@
 #include <cstdio>
-#include "headers/CrcHash.h"
-#include "headers/CpkArchive.h"
+#include "headers/cpk/CrcHash.h"
+#include "headers/cpk/CpkArchive.h"
 #include <cstdint>
 
-int main()
+#include "headers/CpkFileSystem.h"
+
+
+void CpkArchiveTestCase()
 {
-	printf("pal3 access\n");
-	
 	auto crc = new pal3::Crc32Hash();
 	crc->Init();
-
 	{
-		printf("p1\n");
 		pal3::CpkArchive archive("D:\\code\\pal3_dev\\pal3\\basedata\\basedata.cpk", crc, 936);
 		archive.Init();
 
@@ -21,10 +20,22 @@ int main()
 
 		archive.LoadArchiveIntoMemory();
 		archive.ExtractTo("D:\\code\\pal3_dev\\testextr");
-		
 	}
 	delete crc;
-	
+}
+
+int main()
+{
+	printf("pal3 access\n");
+	//CpkArchiveTestCase();
+
+	pal3::CpkFileSystem cpkFileSys;
+	auto archive = cpkFileSys.Mount("D:\\code\\pal3_dev\\pal3\\basedata\\basedata.cpk");
+
+
+	uint32_t len;
+	uint8_t* data = archive->GetFileBytesFromFile("ROLE\\101\\C01.MV3",len);
+
 	printf("p2\n");
 	return 0;
 }

@@ -1,4 +1,4 @@
-#include "../headers/CrcHash.h"
+#include "../../headers/cpk/CrcHash.h"
 //#include "../headers/encoding/Encoding.h"
 #include <sstream>
 #include <codecvt>
