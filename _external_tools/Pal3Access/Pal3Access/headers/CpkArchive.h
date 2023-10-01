@@ -23,10 +23,10 @@ namespace pal3
 		void LoadArchiveIntoMemory();
 		void ReleaseMemory();
 		void ExtractTo(const std::string& outputFolder);
+		uint8_t* GetFileBytes(const std::string& fileVirtualPath, uint32_t& len, bool& bNeedDealloc);
 
-		//void ReadFileBytes(const std::string& fileVirtualPath,uint8_t* result,uint32_t len);
-		uint8_t* GetFileBytes(const std::string& fileVirtualPath, uint32_t& len);
-		
+		void SetLogEnable(bool bEnable) { _bEnableLog = bEnable; }
+
 	private:
 		bool IsValidCpkHeader(const CpkHeader* header);
 		void BuildEntities(const uint8_t* indexTableBuffer, const CpkHeader& header);
@@ -35,10 +35,10 @@ namespace pal3
 		
 		void ExtractToInternal(const std::string& outputFolder,const std::vector<CpkEntry*>& nodes);
 
-		std::vector<CpkEntry*> GetRootEntries();
+		std::vector<CpkEntry*> BuildEntryTree();
 		void BuildFileNameMap();
 		std::vector<CpkEntry*> GetChildren(uint32_t fatherCRC, std::string rootPath);
-		
+
 	private:
 		std::string _filePath;
 		Crc32Hash*	_crcHash;
@@ -59,5 +59,7 @@ namespace pal3
 		// Hold all binary data
 		uint8_t* _archiveData = nullptr;
 		size_t _archiveDataLen = 0;
+
+		bool _bEnableLog = false;
 	};
 }

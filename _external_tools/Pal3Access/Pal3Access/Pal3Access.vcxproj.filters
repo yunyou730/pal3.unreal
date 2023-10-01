@@ -85,6 +85,9 @@
     <ClInclude Include="headers\encoding\Encoding.h">
       <Filter>headers\encoding</Filter>
     </ClInclude>
+    <ClInclude Include="headers\CpkUtils.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CpkEntity.cpp">
@@ -105,6 +108,9 @@
     </ClCompile>
     <ClCompile Include="src\encoding\Encoding.cpp">
       <Filter>src\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CpkUtils.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

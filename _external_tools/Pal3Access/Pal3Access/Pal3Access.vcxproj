@@ -148,6 +148,7 @@
     <ClInclude Include="headers\CpkEntry.h" />
     <ClInclude Include="headers\CpkFileSystem.h" />
     <ClInclude Include="headers\CpkHeader.h" />
+    <ClInclude Include="headers\CpkUtils.h" />
     <ClInclude Include="headers\CrcHash.h" />
     <ClInclude Include="headers\encoding\Encoding.h" />
     <ClInclude Include="headers\lzo\lzo1.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\CpkArchive.cpp" />
     <ClCompile Include="src\CpkEntity.cpp" />
     <ClCompile Include="src\CpkFileSystem.cpp" />
+    <ClCompile Include="src\CpkUtils.cpp" />
     <ClCompile Include="src\CrcHash.cpp" />
     <ClCompile Include="src\encoding\Encoding.cpp" />
     <ClCompile Include="src\minilzo.c" />

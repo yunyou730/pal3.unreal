@@ -14,26 +14,6 @@ int main()
 	archive.Init();
 	archive.LoadArchiveIntoMemory();
 
-	std::string test = "init.sce";
-	if (archive.FileExists(test))
-	{
-		printf("test1\n");
-	}
-	else
-	{
-		printf("test2\n");
-	}
-
-	test = "caption\\1A.tga";
-	if (archive.FileExists(test))
-	{
-		printf("test1\n");
-	}
-	else
-	{
-		printf("test2\n");
-	}
-
 	archive.ExtractTo("D:\\code\\pal3_dev\\test_extract");
 
 	return 0;

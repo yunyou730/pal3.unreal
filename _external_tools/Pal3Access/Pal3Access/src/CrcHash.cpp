@@ -1,5 +1,5 @@
 #include "../headers/CrcHash.h"
-#include "../headers/encoding/Encoding.h"
+//#include "../headers/encoding/Encoding.h"
 #include <sstream>
 #include <codecvt>
 #include <vector>

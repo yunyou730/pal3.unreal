@@ -3,8 +3,7 @@
 #include "../headers/CpkHeader.h"
 #include "../headers/CpkEntity.h"
 #include "../headers/CpkEntry.h"
-#include "../headers/encoding/Encoding.h"
-//#include "../headers/lzo/*/"
+//#include "../headers/encoding/Encoding.h"
 #include "./minilzo.h"
 #include <string>
 #include <iostream>
@@ -18,18 +17,22 @@
 
 namespace pal3
 {
-
 	namespace fs = std::filesystem;
+
+	static const int32_t CPK_VERSION = 1;
+	static const int32_t CPK_HEADER_MAGIC = 0x1A545352;  // CPK header magic label
+	static const int32_t CPK_DEFAULT_MAX_NUM_OF_FILE = 32768; // Max number of files per archive
+	static const std::string PATH_SEQPARATOR = "\\";
 
 	static bool endsWithPathSeparator(const std::string& str) 
 	{
 		fs::path filePath(str);
-		return filePath.string().back() == '\\';
+		return filePath.string().back() == PATH_SEQPARATOR.back();
 	}
 
 	static bool CreateDirectory(const std::string& path)
 	{
-		printf("[CreateDirectory] %s\n",path.c_str());
+		//printf("[CreateDirectory] %s\n",path.c_str());
 		try
 		{
 			if (!std::filesystem::exists(path))
@@ -44,11 +47,6 @@ namespace pal3
 			return false;
 		}
 	}
-
-
-	static const int32_t CPK_VERSION = 1;
-	static const int32_t CPK_HEADER_MAGIC = 0x1A545352;  // CPK header magic label
-	static const int32_t CPK_DEFAULT_MAX_NUM_OF_FILE = 32768; // Max number of files per archive
 
 	CpkArchive::CpkArchive(const std::string& filePath, Crc32Hash* crcHash, int codePage)
 	{
@@ -146,7 +144,7 @@ namespace pal3
 
 	void CpkArchive::ExtractTo(const std::string& outputFolder)
 	{
-		std::vector<CpkEntry*> rootEntries = GetRootEntries();
+		std::vector<CpkEntry*> rootEntries = BuildEntryTree();
 		CreateDirectory(outputFolder);
 		ExtractToInternal(outputFolder,rootEntries);
 	}
@@ -156,12 +154,8 @@ namespace pal3
 		std::string path = outputFolder;
 		if (!endsWithPathSeparator(path))
 		{
-			path = path + "\\";
+			path = path + PATH_SEQPARATOR;
 		}
-
-		//printf("@@@ %s\n",path.c_str());
-		//CreateDirectory(path);
-
 
 		uint32_t rawLen = 0;
 		for (auto it : nodes)
@@ -172,21 +166,25 @@ namespace pal3
 
 			if (node->IsDirectory)
 			{
-				//ExtractToInternal(fullPath,node->Children);
-
 				CreateDirectory(fullPath);
 				ExtractToInternal(outputFolder, node->Children);
 			}
 			else
 			{
-				uint8_t* rawData = GetFileBytes(reltivePath, rawLen);
+				bool bNeedDealloc = false;
+				uint8_t* rawData = GetFileBytes(reltivePath, rawLen, bNeedDealloc);
 				if (rawData != nullptr)
 				{
 					std::ofstream file(fullPath,std::ios::binary | std::ios::trunc);
 					if (file.is_open())
 					{
 						file.write(reinterpret_cast<const char*>(rawData),rawLen);
-						printf("[WriteFile] %s\n", fullPath.c_str());
+						//printf("[WriteFile] %s\n", fullPath.c_str());
+					}
+
+					if (bNeedDealloc)
+					{
+						delete[] rawData;
 					}
 				}
 			}
@@ -263,14 +261,14 @@ namespace pal3
 
 			/*if (entity->FatherCRC == 0)
 			{
-				printf("ROOT!\n");
+				printf("ROOT\n");
 			}*/
 		}
 	}
 
 	// Build a tree structure map of the internal file system,
 	// and return the root nodes in CpkEntry format
-	std::vector<CpkEntry*> CpkArchive::GetRootEntries()
+	std::vector<CpkEntry*> CpkArchive::BuildEntryTree()
 	{
 		if (_fileNameMap.size() == 0)
 		{
@@ -307,12 +305,7 @@ namespace pal3
 		{
 			return result;
 		}
-
-		//if (rootPath.empty())
-		//{
-		//	rootPath = "\\";
-		//}
-
+		
 		auto& childCrcSet = fatherIt->second;
 		for (uint32_t childCrc : childCrcSet)
 		{
@@ -335,29 +328,27 @@ namespace pal3
 			CpkEntry* entry = nullptr;
 			if (childEntity->IsDirectory())
 			{
-				entry = new CpkEntry(virtualPath, true, GetChildren(childEntity->CRC, virtualPath + "\\"));
+				entry = new CpkEntry(virtualPath, true, GetChildren(childEntity->CRC, virtualPath + PATH_SEQPARATOR));
 			}
 			else
 			{
 				entry = new CpkEntry(virtualPath, false);
-				printf("### %s\n",virtualPath.c_str());
+				//printf("### %s\n",virtualPath.c_str());
 			}
 			result.push_back(entry);
-		}		
+		}
 		return result;
 	}
 
-	uint8_t* CpkArchive::GetFileBytes(const std::string& fileVirtualPath,uint32_t& len)
+	uint8_t* CpkArchive::GetFileBytes(const std::string& fileVirtualPath, uint32_t& len,bool& bNeedDealloc)
 	{
 		CpkEntity* entity = GetCpkEntity(fileVirtualPath);
-		
 		uint32_t start = entity->StartPos;
 		uint32_t end = entity->StartPos + entity->PackageSize;
 
 		if (entity->IsCompressed())
 		{
 			uint32_t size = entity->OriginSize;
-			//lzo1x_decompress()
 			len = 0;
 
 			uint32_t rawLen = end - start + 1;
@@ -367,11 +358,14 @@ namespace pal3
 			lzo1x_decompress(_archiveData + start, rawLen, decompressedData, &decompressedLen, nullptr);
 
 			len = size;
+
+			bNeedDealloc = true;
 			return decompressedData;
 		}
 		else
 		{
 			len = end - start + 1;
+			bNeedDealloc = false;
 			return _archiveData + start;
 		}
 	}
