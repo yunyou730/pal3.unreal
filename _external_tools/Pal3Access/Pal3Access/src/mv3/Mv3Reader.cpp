@@ -17,9 +17,9 @@ namespace pal3
 	{
 		Mv3* result = new Mv3();
 
-		// header
-		char header[4];
-		BinReader::Read(header, _data, _cur, sizeof(header));
+		char header[5];
+		BinReader::Read(header, _data, _cur, 4 * sizeof(uint8_t));
+		header[4] = '\0';
 		assert(strcmp(header, "MV3") == 0);
 		
 		uint32_t version = 0;
