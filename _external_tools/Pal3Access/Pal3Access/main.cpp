@@ -15,9 +15,12 @@ int main()
 		pal3::CpkArchive archive("D:\\code\\pal3_dev\\pal3\\basedata\\basedata.cpk", crc, 936);
 		archive.Init();
 
+		//uint32_t len;
+		//bool bNeedDealloc = false;
+		//uint8_t* testData = archive.GetFileBytesFromFile("ROLE\\101\\C01.MV3",len, bNeedDealloc);
 
 		archive.LoadArchiveIntoMemory();
-		archive.ExtractTo("D:\\code\\pal3_dev\\test_extract");
+		archive.ExtractTo("D:\\code\\pal3_dev\\testextr");
 		
 	}
 	delete crc;

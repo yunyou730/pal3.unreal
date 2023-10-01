@@ -23,9 +23,12 @@ namespace pal3
 		void LoadArchiveIntoMemory();
 		void ReleaseMemory();
 		void ExtractTo(const std::string& outputFolder);
-		uint8_t* GetFileBytes(const std::string& fileVirtualPath, uint32_t& len, bool& bNeedDealloc);
+
+		uint8_t* GetFileBytesFromFile(const std::string& fileVirtualPath, uint32_t& len);
+		uint8_t* GetFileBytesFromCache(const std::string& fileVirtualPath, uint32_t& len, bool& bNeedDealloc);
 
 		void SetLogEnable(bool bEnable) { _bEnableLog = bEnable; }
+		bool HasLoadIntoMemory() const { return _archiveData != nullptr; }
 
 	private:
 		bool IsValidCpkHeader(const CpkHeader* header);
@@ -38,8 +41,7 @@ namespace pal3
 		std::vector<CpkEntry*> BuildEntryTree();
 		void BuildFileNameMap();
 		std::vector<CpkEntry*> GetChildren(uint32_t fatherCRC, std::string rootPath);
-
-
+		
 	private:
 		void ReleaseEntities();
 		void ReleaseEntries();

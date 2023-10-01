@@ -122,6 +122,8 @@ namespace pal3
 
 	void CpkArchive::ExtractTo(const std::string& outputFolder)
 	{
+		assert(_archiveData != nullptr);
+
 		_rootEntries = BuildEntryTree();
 		CpkUtils::CreateDirectory(outputFolder);
 		ExtractToInternal(outputFolder, _rootEntries);
@@ -150,7 +152,8 @@ namespace pal3
 			else
 			{
 				bool bNeedDealloc = false;
-				uint8_t* rawData = GetFileBytes(reltivePath, rawLen, bNeedDealloc);
+				uint8_t* rawData = GetFileBytesFromCache(reltivePath, rawLen, bNeedDealloc);
+
 				if (rawData != nullptr)
 				{
 					std::ofstream file(fullPath,std::ios::binary | std::ios::trunc);
@@ -318,7 +321,7 @@ namespace pal3
 		return result;
 	}
 
-	uint8_t* CpkArchive::GetFileBytes(const std::string& fileVirtualPath, uint32_t& len,bool& bNeedDealloc)
+	uint8_t* CpkArchive::GetFileBytesFromCache(const std::string& fileVirtualPath, uint32_t& len,bool& bNeedDealloc)
 	{
 		CpkEntity* entity = GetCpkEntity(fileVirtualPath);
 		uint32_t start = entity->StartPos;
@@ -328,9 +331,9 @@ namespace pal3
 		{
 			uint32_t size = entity->OriginSize;
 			len = 0;
-
-			uint32_t rawLen = end - start + 1;
-			uint8_t* decompressedData = new uint8_t[size];	// Leak Here!!
+			
+			uint32_t rawLen = end - start;
+			uint8_t* decompressedData = new uint8_t[size];	// Leak here! we should delete[] from outside
 
 			lzo_uint decompressedLen;
 			lzo1x_decompress(_archiveData + start, rawLen, decompressedData, &decompressedLen, nullptr);
@@ -342,9 +345,43 @@ namespace pal3
 		}
 		else
 		{
-			len = end - start + 1;
+			len = end - start;
 			bNeedDealloc = false;
 			return _archiveData + start;
+		}
+	}
+
+	uint8_t* CpkArchive::GetFileBytesFromFile(const std::string& fileVirtualPath, uint32_t& len)
+	{
+		CpkEntity* entity = GetCpkEntity(fileVirtualPath);
+		uint32_t start = entity->StartPos;
+		uint32_t end = entity->StartPos + entity->PackageSize;
+
+		std::ifstream file(_filePath, std::ios::binary);
+		assert(file.is_open());
+		
+		const uint32_t rawLen = end - start;
+		uint8_t* rawData = new uint8_t[rawLen];
+		
+		file.seekg(start);
+		file.read(reinterpret_cast<char*>(rawData), end - start);
+		file.close();
+
+		if (entity->IsCompressed())
+		{
+			len = entity->OriginSize;
+
+			uint8_t* decompressedData = new uint8_t[len];
+			lzo_uint decompressedLen;
+			lzo1x_decompress(rawData, rawLen, decompressedData, &decompressedLen, nullptr);
+			delete[] rawData;
+
+			return decompressedData;
+		}
+		else
+		{
+			len = rawLen;
+			return rawData;
 		}
 	}
 
