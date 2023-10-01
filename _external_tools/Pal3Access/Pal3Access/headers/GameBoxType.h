@@ -4,6 +4,8 @@
 
 namespace pal3
 {
+
+#pragma pack(push,1)
 	struct GameBoxVector3
 	{
 		float x, y, z;
@@ -20,6 +22,7 @@ namespace pal3
 			this->z = z;
 		}
 	};
+#pragma pack(pop)
 
 	struct GameBoxVector2
 	{

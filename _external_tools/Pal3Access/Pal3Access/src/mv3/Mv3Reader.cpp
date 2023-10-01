@@ -1,6 +1,7 @@
 #include "../../headers//mv3/Mv3Reader.h"
 #include "../../headers//mv3/Mv3.h"
 #include <cassert>
+#include "../../headers/BinReader.h"
 
 namespace pal3
 {
@@ -18,36 +19,28 @@ namespace pal3
 
 		// header
 		char header[4];
-		memcpy(header, _data + _cur, sizeof(header));
+		BinReader::Read(header, _data, _cur, sizeof(header));
 		assert(strcmp(header, "MV3") == 0);
-		_cur += sizeof(header);
-
-		// version
+		
 		uint32_t version = 0;
-		memcpy(&version, _data + _cur, sizeof(uint32_t));
+		BinReader::Read(&version, _data, _cur, sizeof(uint32_t));
 		assert(version == 100);
-		_cur += sizeof(uint32_t);
-
+		
 		uint32_t duration;
-		memcpy(&duration, _data + _cur, sizeof(uint32_t));
-		_cur += sizeof(uint32_t);
+		BinReader::Read(&duration, _data, _cur, sizeof(uint32_t));
 
 		int32_t numOfMaterials;
-		memcpy(&numOfMaterials, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		BinReader::Read(&numOfMaterials, _data, _cur, sizeof(int32_t));
 
 		int32_t numOfTagNodes;
-		memcpy(&numOfTagNodes, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		BinReader::Read(&numOfTagNodes, _data, _cur, sizeof(int32_t));
 
 		int32_t numOfMeshes;
-		memcpy(&numOfMeshes, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		BinReader::Read(&numOfMeshes, _data, _cur, sizeof(int32_t));
 
 		int32_t numOfAnimationEvents;
-		memcpy(&numOfAnimationEvents, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
-
+		BinReader::Read(&numOfAnimationEvents, _data, _cur, sizeof(int32_t));
+		
 		assert(numOfMeshes > 0 && numOfMaterials > 0);
 		
 		// animation events
@@ -84,28 +77,19 @@ namespace pal3
 	Mv3AnimationEvent* Mv3Reader::ReadAnimationEvent()
 	{
 		auto item = new Mv3AnimationEvent();
-		memcpy(&item->gameBoxTick,_data + _cur,sizeof(uint32_t));
-		_cur += sizeof(uint32_t);
-
-		memcpy(&item->name,_data + _cur,sizeof(item->name));
-		_cur += sizeof(item->name);
-
+		BinReader::Read(&item->gameBoxTick,_data,_cur, sizeof(uint32_t));
+		BinReader::Read(&item->name, _data, _cur, sizeof(item->name));
 		return item;
 	}
 
 	Mv3TagNode* Mv3Reader::ReadTagNode()
 	{
 		auto item = new Mv3TagNode();
-		memcpy(&item->name,_data + _cur,sizeof(item->name));
-		_cur += sizeof(item->name);
-
-		memcpy(&item->flipScale,_data + _cur,sizeof(uint32_t));	// 32bits for float
-		_cur += sizeof(uint32_t);
-
-
+		BinReader::Read(&item->name, _data, _cur, sizeof(item->name));
+		BinReader::Read(&item->flipScale, _data, _cur, sizeof(uint32_t));	// 32bits for float
+		
 		int32_t numOfFrames;
-		memcpy(&numOfFrames,_data + _cur,sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		BinReader::Read(&numOfFrames, _data, _cur, sizeof(int32_t));
 
 		item->tagFrames.reserve(numOfFrames);
 		for (int i = 0;i < numOfFrames;i++)
@@ -119,27 +103,10 @@ namespace pal3
 	Mv3TagFrame* Mv3Reader::ReadTagFrame()
 	{
 		Mv3TagFrame* item = new Mv3TagFrame();
-
-		memcpy(&item->gameBoxTick, _data + _cur, sizeof(uint32_t));
-		_cur += sizeof(uint32_t);
-
-		float xyz[3];
-		memcpy(&xyz, _data + _cur, 3 * sizeof(uint32_t));	// 32 bits for float
-		_cur += 3 * sizeof(uint32_t);
-		item->gameBoxPosition.x = xyz[0];
-		item->gameBoxPosition.y = xyz[1];
-		item->gameBoxPosition.z = xyz[2];
-		
-		float xyzw[4];
-		memcpy(&xyzw,_data + _cur, 4 * sizeof(uint32_t));	// 32 bits for float
-		_cur += 4 * sizeof(uint32_t);
-		item->gameBoxRotation.x = xyzw[0];
-		item->gameBoxRotation.y = xyzw[1];
-		item->gameBoxRotation.z = xyzw[2];
-		item->gameBoxRotation.w = xyzw[3];
-
-		memcpy(item->scale,_data + _cur, 9 * sizeof(uint32_t));	// 32 bits for float
-		_cur += 9 * sizeof(uint32_t);
+		BinReader::Read(&item->gameBoxTick, _data, _cur, sizeof(uint32_t));
+		BinReader::ReadVector3(item->gameBoxPosition,_data,_cur);
+		BinReader::ReadQuaternion(item->gameBoxRotation,_data,_cur);
+		BinReader::Read(item->scale, _data, _cur, 9 * sizeof(uint32_t));	// 3 x 3 = 9 floats, 32 bits for reach float
 
 		return item;
 
@@ -149,39 +116,11 @@ namespace pal3
 	{
 		auto item = new GameBoxMaterial();
 
-		float rgba[4];
-		
-		memcpy(rgba,_data + _cur,4 * sizeof(uint32_t));
-		_cur += 4 * sizeof(uint32_t);
-		item->diffuse.R = rgba[0];
-		item->diffuse.G = rgba[1];
-		item->diffuse.B = rgba[2];
-		item->diffuse.A = rgba[3];
-
-		memcpy(rgba, _data + _cur, 4 * sizeof(uint32_t));
-		_cur += 4 * sizeof(uint32_t);
-		item->ambient.R = rgba[0];
-		item->ambient.G = rgba[1];
-		item->ambient.B = rgba[2];
-		item->ambient.A = rgba[3];
-
-		memcpy(rgba, _data + _cur, 4 * sizeof(uint32_t));
-		_cur += 4 * sizeof(uint32_t);
-		item->specular.R = rgba[0];
-		item->specular.G = rgba[1];
-		item->specular.B = rgba[2];
-		item->specular.A = rgba[3];
-
-		memcpy(rgba, _data + _cur, 4 * sizeof(uint32_t));
-		_cur += 4 * sizeof(uint32_t);
-		item->emissive.R = rgba[0];
-		item->emissive.G = rgba[1];
-		item->emissive.B = rgba[2];
-		item->emissive.A = rgba[3];
-
-		memcpy(&item->specularPower, _data + _cur, sizeof(uint32_t));
-		_cur += sizeof(uint32_t);
-
+		BinReader::ReadColor(item->diffuse, _data, _cur);
+		BinReader::ReadColor(item->ambient, _data, _cur);
+		BinReader::ReadColor(item->specular, _data, _cur);
+		BinReader::ReadColor(item->emissive, _data, _cur);
+		BinReader::ReadFloat(item->specularPower,_data,_cur);
 
 		// textures
 		item->textureFileNames.reserve(4);
@@ -191,8 +130,7 @@ namespace pal3
 			char* textureName = nullptr;
 
 			int32_t len;
-			memcpy(&len,_data + _cur,sizeof(int32_t));
-			_cur += sizeof(int32_t);
+			BinReader::Read<int32_t>(len,_data,_cur);
 
 			if (len > 0)
 			{
@@ -222,41 +160,25 @@ namespace pal3
 	{
 		Mv3Mesh* item = new Mv3Mesh();
 		// Name
-		memcpy(item->name, _data + _cur, 64);
-		_cur += 64;
+		memcpy(item->name, _data + _cur, sizeof(item->name));
+		_cur += sizeof(item->name);
 
 		// Vertices Number
-		int32_t numOfVertices;
-		memcpy(&numOfVertices, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		int32_t numOfVertices = BinReader::Read<int32_t>(_data,_cur);
 
 		// Bounding Box		
-		float xyz[3];
-		memcpy(xyz, _data + _cur, 3 * sizeof(int32_t));
-		_cur += 3 * sizeof(int32_t);
-		item->gameboxBoundsMin.x = xyz[0];
-		item->gameboxBoundsMin.y = xyz[1];
-		item->gameboxBoundsMin.z = xyz[2];
-
-		memcpy(xyz, _data + _cur, 3 * sizeof(int32_t));
-		_cur += 3 * sizeof(int32_t);
-		item->gameboxBoundsMax.x = xyz[0];
-		item->gameboxBoundsMax.y = xyz[1];
-		item->gameboxBoundsMax.z = xyz[2];
+		BinReader::ReadVector3(item->gameboxBoundsMin, _data, _cur);
+		BinReader::ReadVector3(item->gameboxBoundsMax, _data, _cur);
 
 		// Frames
-		int32_t numOfFrames;
-		memcpy(&numOfFrames,_data + _cur,sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		int32_t numOfFrames = BinReader::Read<int32_t>(_data, _cur);
 
 		std::vector<Mv3VertFrame*> frames;
 		frames.reserve(numOfFrames);
 		for (int i = 0;i < numOfFrames;i++)
 		{
 			// Tick Index
-			uint32_t gameBoxTick;
-			memcpy(&gameBoxTick,_data + _cur,sizeof(uint32_t));
-			_cur += sizeof(uint32_t);
+			uint32_t gameBoxTick = BinReader::Read<uint32_t>(_data, _cur);
 
 			// Vertices
 			std::vector<Mv3Vert*> vertices;
@@ -264,9 +186,7 @@ namespace pal3
 			for (int j = 0;j < numOfVertices;j++)
 			{
 				Mv3Vert* vert = new Mv3Vert();
-				memcpy(vert, _data + _cur, sizeof(Mv3Vert));
-				_cur += sizeof(Mv3Vert);
-
+				BinReader::Read<Mv3Vert>(*vert,_data,_cur);
 				vertices.push_back(vert);
 			}
 
@@ -278,9 +198,7 @@ namespace pal3
 		}
 
 		// UVs
-		int32_t numOfTexCoords;
-		memcpy(&numOfTexCoords, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		int32_t numOfTexCoords = BinReader::Read<int32_t>(_data,_cur);
 
 		std::vector<GameBoxVector2> texCoords;
 		if (numOfTexCoords == 0)
@@ -292,17 +210,13 @@ namespace pal3
 			for (int i = 0;i < numOfTexCoords;i++)
 			{
 				float uv[2];
-				memcpy(uv, _data + _cur, 2 * sizeof(int32_t));
-				_cur += 2 * sizeof(int32_t);
-
+				BinReader::Read(uv, _data, _cur, 2 * sizeof(int32_t));
 				texCoords.push_back(GameBoxVector2(uv[0], uv[1]));
 			}
 		}
 
 		// Attributes
-		int32_t numOfAttributes;
-		memcpy(&numOfAttributes, _data + _cur, sizeof(int32_t));
-		_cur += sizeof(int32_t);
+		int32_t numOfAttributes = BinReader::Read<int32_t>(_data,_cur);
 		assert(numOfAttributes > 0);
 		
 		std::vector<Mv3Attribute*> attributes;
@@ -312,38 +226,25 @@ namespace pal3
 			Mv3Attribute* attribute = new Mv3Attribute();
 			attributes.push_back(attribute);
 
-			int32_t materialId, numOfTriangles;
-
-			memcpy(&materialId, _data + _cur, sizeof(int32_t));
-			_cur += sizeof(int32_t);
-
-			memcpy(&numOfTriangles, _data + _cur, sizeof(int32_t));
-			_cur += sizeof(int32_t);
+			int32_t materialId = BinReader::Read<int32_t>(_data, _cur);
+			int32_t numOfTriangles = BinReader::Read<int32_t>(_data, _cur);
 
 			// Triangle & Index Buffer
 			std::vector<Mv3IndexBuffer*> triangles;
 			triangles.reserve(numOfTriangles);
-
 			for (int j = 0;j < numOfTriangles;j++)
 			{
 				Mv3IndexBuffer* triangle = new Mv3IndexBuffer();
-
-				memcpy(triangle, _data + _cur, sizeof(Mv3IndexBuffer));
-				_cur += sizeof(Mv3IndexBuffer);
-
+				BinReader::Read<Mv3IndexBuffer>(*triangle,_data,_cur);
 				triangles.push_back(triangle);
 			}
 
 			// Commands
-			int32_t numOfCommands;
-			memcpy(&numOfCommands, _data + _cur, sizeof(int32_t));
-			_cur += sizeof(int32_t);
-
+			int32_t numOfCommands = BinReader::Read<int32_t>(_data, _cur);
 			if (numOfCommands > 0)
 			{
 				attribute->commands.reserve(numOfCommands);
-				memcpy(attribute->commands.data(), _data + _cur, numOfCommands * sizeof(int32_t));
-				_cur += numOfCommands * sizeof(int32_t);
+				BinReader::Read(attribute->commands.data(), _data, _cur, numOfCommands * sizeof(int32_t));
 			}
 			
 			// Attribute

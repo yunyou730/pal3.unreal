@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="headers\BinReader.h" />
     <ClInclude Include="headers\CpkFileSystem.h" />
     <ClInclude Include="headers\cpk\CpkArchive.h" />
     <ClInclude Include="headers\cpk\CpkEntity.h" />
