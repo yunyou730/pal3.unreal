@@ -14,7 +14,8 @@ namespace pal3
 		IsNotCompressed = 0x10000,
 	} ECpkEntityFlag;
 
-	class CpkEntity
+#pragma pack(push,1)
+	struct CpkEntity
 	{
 	public:
 		uint32_t CRC;
@@ -50,4 +51,5 @@ namespace pal3
 			return (Flag & ((uint32_t)ECpkEntityFlag::IsDeleted)) != 0;
 		}
 	};
+#pragma pack(pop)
 }

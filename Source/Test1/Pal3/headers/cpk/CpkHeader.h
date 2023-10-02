@@ -1,6 +1,7 @@
 #include <cstdint>
 namespace pal3
 {
+#pragma pack(push,1)
 	struct CpkHeader
 	{
 		uint32_t label;
@@ -17,4 +18,5 @@ namespace pal3
 		uint32_t packageSize;
 		uint32_t reserved[20];
 	};
+#pragma pack(pop)
 }

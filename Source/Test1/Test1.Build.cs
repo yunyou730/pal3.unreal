@@ -8,7 +8,13 @@ public class Test1 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(
+			new string[] { 
+				"Core", "CoreUObject", "Engine", "InputCore" ,
+				"CustomMeshComponent",
+				"ProceduralMeshComponent"
+			}
+		);
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
@@ -19,5 +25,14 @@ public class Test1 : ModuleRules
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
 
 		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+
+		bEnableUndefinedIdentifierWarnings = false;
+
+		PublicIncludePaths.AddRange(
+			new string[] {
+				"Test1",
+				"Test1/Pal3/headers/lzo"
+			}
+		);
 	}
 }

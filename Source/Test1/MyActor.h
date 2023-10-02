@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "CustomMeshComponent.h"
+#include "ProceduralMeshComponent.h"
 #include "MyActor.generated.h"
 
 UCLASS()
@@ -23,4 +25,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UProceduralMeshComponent* ProceduralMeshComponent;
 };
