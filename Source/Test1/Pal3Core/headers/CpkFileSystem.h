@@ -12,6 +12,7 @@ namespace pal3
 		~CpkFileSystem();
 
 		CpkArchive* Mount(const std::string& cpkFilePath);
+		CpkArchive* GetArchive(const std::string& cpkFilePath);
 
 	private:
 		void ReleaseCRCHash();

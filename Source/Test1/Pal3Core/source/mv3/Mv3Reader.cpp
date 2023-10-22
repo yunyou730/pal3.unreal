@@ -1,5 +1,5 @@
-#include "../../headers//mv3/Mv3Reader.h"
-#include "../../headers//mv3/Mv3.h"
+#include "../../headers/mv3/Mv3Reader.h"
+#include "../../headers/mv3/Mv3.h"
 #include <cassert>
 #include "../../headers/BinReader.h"
 
@@ -257,6 +257,9 @@ namespace pal3
 		return item;
 	}
 
+	// It seems has lots of redundant data, IndexBuffer not work, but the result is right
+	// If we change to property VertexBuffer and IndexBuffer, maybe the result is wrong 
+	// So just keep it
 	void Mv3Reader::BuildMesh(Mv3Mesh* targetMesh,
 								const std::vector<Mv3Attribute*>& attributes,
 								const std::vector<Mv3VertFrame*>& vertFrames,
@@ -265,7 +268,8 @@ namespace pal3
 		std::vector<uint32_t> triangles(attributes[0]->indexBuffers.size() * 3);
 		std::vector<GameBoxVector2> uvs(attributes[0]->indexBuffers.size() * 3);
 
-		// idx1: key index; idx2: Vert Position
+		// key: frame index; 
+		// value: Vert Positions
 		std::vector<std::vector<GameBoxVector3>> keyFrameVertices(vertFrames.size());
 		
 		uint32_t triangleIndex = 0;

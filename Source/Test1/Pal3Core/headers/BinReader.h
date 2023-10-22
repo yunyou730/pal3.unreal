@@ -44,6 +44,11 @@ namespace pal3
 			Read(&value,src,ptr,sizeof(uint32_t)); // float size equals 32
 		}
 
+		static void ReadShort(uint16_t& value,uint8_t* src,uint32_t& ptr)
+		{
+			Read(&value, src, ptr, sizeof(uint16_t)); // short size equals 16
+		}
+
 		static void ReadVector3(GameBoxVector3& value,uint8_t* src,uint32_t& ptr)
 		{
 			float xyz[3];
@@ -62,8 +67,5 @@ namespace pal3
 			value.z = xyzw[2];
 			value.w = xyzw[3];
 		}
-
-
-
 	};
 }

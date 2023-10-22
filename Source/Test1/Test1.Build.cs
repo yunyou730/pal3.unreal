@@ -12,7 +12,8 @@ public class Test1 : ModuleRules
 			new string[] { 
 				"Core", "CoreUObject", "Engine", "InputCore" ,
 				"CustomMeshComponent",
-				"ProceduralMeshComponent"
+				"ProceduralMeshComponent",
+				"ImageWrapper"
 			}
 		);
 
@@ -31,7 +32,7 @@ public class Test1 : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				"Test1",
-				"Test1/Pal3/headers/lzo"
+				"Test1/Pal3Core/headers/lzo"
 			}
 		);
 	}

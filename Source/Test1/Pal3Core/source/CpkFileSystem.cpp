@@ -21,8 +21,19 @@ namespace pal3
 
 	CpkArchive* CpkFileSystem::Mount(const std::string& cpkFilePath)
 	{
-		CpkArchive* archive = new CpkArchive(cpkFilePath,_crcHash,_codePage);
-		archive->Init();
+		CpkArchive* archive = nullptr;
+
+		auto it = _cpkArchives.find(cpkFilePath);
+		if (it == _cpkArchives.end())
+		{
+			archive = new CpkArchive(cpkFilePath, _crcHash, _codePage);
+			archive->Init();
+			_cpkArchives.insert(std::make_pair(cpkFilePath, archive));
+		}
+		else
+		{
+			archive = it->second;
+		}
 		return archive;
 	}
 
@@ -40,6 +51,16 @@ namespace pal3
 			delete archive;
 		}
 		_cpkArchives.clear();
+	}
+
+	CpkArchive* CpkFileSystem::GetArchive(const std::string& cpkFilePath)
+	{
+		auto it = _cpkArchives.find(cpkFilePath);
+		if (it != _cpkArchives.end())
+		{
+			return it->second;
+		}
+		return nullptr;
 	}
 
 }
