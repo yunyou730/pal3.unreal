@@ -32,17 +32,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	//UFUNCTION(BlueprintCallable,Category = "pal3")
-	//void CreateMesh();
-
-	//UFUNCTION(BlueprintCallable, Category = "pal3")
-	//void ReplaceTexture();
-
 	UFUNCTION(BlueprintCallable, Category = "pal3")
 	void UpdateMeshes();
 
 private:
-	pal3::Mv3* ReadMv3();
 	UTexture2D* LoadTexture();
 	void UpdateSubMesh(pal3::Mv3* mv3, UProceduralMeshComponent* proceduralMesh,int subMeshIndex);
 

@@ -35,18 +35,18 @@ namespace pal3
 	bool CpkUtils::CreateDirectory(const std::string& path)
 	{
 		//printf("[CreateDirectory] %s\n",path.c_str());
-		try
-		{
+		//try
+		//{
 			if (!std::filesystem::exists(path))
 			{
 				std::filesystem::create_directory(path);
 			}
 			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			printf("Create direction failed %s\n", ex.what());
-			return false;
-		}
+		//}
+		//catch (const std::exception& ex)
+		//{
+		//	printf("Create direction failed %s\n", ex.what());
+		//	return false;
+		//}
 	}
 }

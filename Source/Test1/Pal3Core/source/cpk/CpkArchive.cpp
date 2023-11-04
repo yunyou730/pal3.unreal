@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <cstdio>
 
 namespace pal3
 {
@@ -48,7 +49,7 @@ namespace pal3
 
 			if (!IsValidCpkHeader(&header))
 			{
-				printf("Invalid Cpk Header %s\n",_filePath.c_str());
+				//printf("Invalid Cpk Header %s\n",_filePath.c_str());
 			}
 
 			size_t cpkEntitySize = sizeof(CpkEntity);
@@ -210,7 +211,7 @@ namespace pal3
 			}
 			else
 			{
-				printf("There's a empty or deleted entity\n");
+				//printf("There's a empty or deleted entity\n");
 				delete entity;
 			}
 		}

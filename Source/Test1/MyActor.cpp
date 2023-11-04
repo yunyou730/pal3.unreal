@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MyActor.h"
 #include "Core/Public/Logging/LogMacros.h"
 #include "Core/Public/Misc/FileHelper.h"
 #include "Core/Public/Misc/Paths.h"
+#include "Core/Public/Internationalization/Text.h"
 
 #include "Pal3Core/headers/CpkFileSystem.h"
 #include "Pal3Core/headers/cpk/CpkArchive.h"
@@ -22,7 +22,10 @@
 
 #include "UObject/Class.h"
 
-static pal3::CpkFileSystem cpkFileSys;
+#include "Pal3Game/Game.h"
+#include "Pal3Game/Settings.h"
+#include "Pal3Game/RawAssetCache.h"
+#include "Pal3Game/RenderUtils.h"
 
 // Sets default values
 AMyActor::AMyActor()
@@ -40,9 +43,8 @@ AMyActor::AMyActor()
 		_materialSample = finder.Object;
 	}
 	
-	_mv3 = ReadMv3();
-	//CreateMesh();
-
+	auto rawAssetCache = pal3::Game::Instance()->GetService<pal3::RawAssetCache>();
+	_mv3 = rawAssetCache->GetMv3("basedata.cpk","ROLE\\104\\C09.MV3");
 	PreCreateSubMeshes();
 }
 
@@ -60,27 +62,6 @@ void AMyActor::Tick(float DeltaTime)
 	//UE_LOG(LogTemp, Warning, TEXT("ayyTick3"));
 
 }
-
-pal3::Mv3* AMyActor::ReadMv3()
-{
-	auto archive = cpkFileSys.Mount("D:\\code\\pal3_dev\\pal3\\basedata\\basedata.cpk");
-	uint32_t len;
-	uint8_t* data = archive->GetFileBytesFromFile("ROLE\\104\\C09.MV3", len);
-
-	pal3::Mv3Reader reader(data, len);
-	pal3::Mv3* mv3 = reader.Read();
-
-	return mv3;
-}
-
-//void AMyActor::CreateMesh()
-//{
-//	UE_LOG(LogTemp, Warning, TEXT("AMyActor::CreateMesh"));
-//	if (_mv3 != nullptr)
-//	{
-//		InitMeshes(_mv3);
-//	}
-//}
 
 void AMyActor::PreCreateSubMeshes()
 {
@@ -126,7 +107,7 @@ void AMyActor::UpdateSubMesh(pal3::Mv3* mv3, UProceduralMeshComponent* procedura
 	for (auto it : mv3->meshes[subMeshIndex]->keyFrames[frameIndex]->gameBoxVertices)
 	{
 		vertices.Add(FVector(it.x, it.y, it.z));
-		normals.Add(FVector(0, 0, 1));		// @miao @temp; // normal we should calculate it 
+		normals.Add(FVector(0, 0, 1));		// @miao @temp; // normal we should re-calculate it 
 	}
 
 	TArray<int32> triangles;
@@ -169,59 +150,10 @@ void AMyActor::UpdateSubMesh(pal3::Mv3* mv3, UProceduralMeshComponent* procedura
 
 UTexture2D* AMyActor::LoadTexture()
 {
-	auto archive = cpkFileSys.GetArchive("D:\\code\\pal3_dev\\pal3\\basedata\\basedata.cpk");
-	
-	uint32_t len;
-	uint8_t* data = archive->GetFileBytesFromFile("ROLE\\104\\104.tga", len);
+	auto rawAssetCache = pal3::Game::Instance()->GetService<pal3::RawAssetCache>();
+	pal3::RawTexture* rawTexture = rawAssetCache->GetTexture("basedata.cpk","ROLE\\104\\104.tga");
 
-	pal3::TGALoader loader;
-	pal3::RawTexture* rawTexture = loader.Load(data,len);
-
-	// Create Engine Texture Object
-	//UTexture2D* texture = NewObject<UTexture2D>(GetTransientPackage(), FName("AyyTexture"), RF_Transient);
-	UTexture2D* texture = NewObject<UTexture2D>(GetTransientPackage());
-	texture->PlatformData = new FTexturePlatformData();
-	texture->PlatformData->SizeX = rawTexture->width;
-	texture->PlatformData->SizeY = rawTexture->height;
-	texture->PlatformData->SetNumSlices(1);
-	texture->PlatformData->PixelFormat = PF_R8G8B8A8;
-
-	FTexture2DMipMap* mip = new FTexture2DMipMap();
-	mip->SizeX = rawTexture->width;
-	mip->SizeY = rawTexture->height;
-
-	mip->BulkData.Lock(LOCK_READ_WRITE),
-	FMemory::Memcpy(
-		mip->BulkData.Realloc(rawTexture->width * rawTexture->height * 4),
-		rawTexture->bytes.data(),
-		rawTexture->width * rawTexture->height * 4
-	);
-	mip->BulkData.Unlock();
-	texture->PlatformData->Mips.Add(mip);
-	texture->UpdateResource();
-	
-
-	// Save to HardDisk
-	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
-	if (!ImageWrapper.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create image wrapper."));
-		return nullptr;
-	}
-	ImageWrapper->SetRaw(rawTexture->bytes.data(), 
-		rawTexture->bytes.size(),
-		//rawTexture->width * rawTexture->height * sizeof(FColor), 
-		rawTexture->width, rawTexture->height,
-		ERGBFormat::RGBA, 
-		8);
-	TArray<uint8, TSizedDefaultAllocator<64>> CompressedData = ImageWrapper->GetCompressed();
-
-	FString FilePath("D:\\code\\pal3_dev\\test.png");
-	if (FFileHelper::SaveArrayToFile(CompressedData, *FilePath))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Texture saved to: %s"), *FilePath);
-	}
-
+	UTexture2D* texture = pal3::RenderUtils::CreateTexture(rawTexture);
+	//pal3::RenderUtils::SaveTextureToDisk("D:\\test2.png", rawTexture);
 	return texture;
 }
