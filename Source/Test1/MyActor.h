@@ -53,7 +53,8 @@ protected:
 	UProceduralMeshComponent* _proceduralMesh;
 
 	uint32_t	_frameIndex = 0;
-	//float	_elapsedTime = 0.0f;
+	float	_frameElapsedTime = 0;
+	float	_frameKeepTime = 0;
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Pal3")

@@ -50,6 +50,8 @@ AMyActor::AMyActor()
 
 	// Mv3 Wrapper
 	_mv3Wrapper = new pal3::Mv3Wrapper();
+
+	SetFrameSpeed(3);
 }
 
 void AMyActor::SetSpawnParam(FString cpkName, FString dirName, FString fileName)
@@ -62,6 +64,8 @@ void AMyActor::SetSpawnParam(FString cpkName, FString dirName, FString fileName)
 void AMyActor::SetFrameSpeed(int32 framePlaySpeed)
 {
 	_framePlaySpeed = framePlaySpeed;
+	_frameKeepTime = 1.0f / _framePlaySpeed;
+	_frameElapsedTime = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -74,24 +78,26 @@ void AMyActor::BeginPlay()
 void AMyActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	/*_elapsedTime += DeltaTime;*/
+	
 	if (_mv3Wrapper != nullptr && _mv3Wrapper->HasLoaded())
 	{
-		_frameIndex++;
-		if (_frameIndex >= _mv3Wrapper->GetFrameCount())
+		_frameElapsedTime += DeltaTime;
+		if (_frameElapsedTime >= _frameKeepTime)
 		{
-			_frameIndex %= _mv3Wrapper->GetFrameCount();
+			_frameElapsedTime -= _frameKeepTime;
+
+			// Process to next frame
+			_frameIndex++;
+			if (_frameIndex >= _mv3Wrapper->GetFrameCount())
+			{
+				_frameIndex %= _mv3Wrapper->GetFrameCount();
+			}
 		}
 	}
 }
 
 void AMyActor::LoadAndCreateMesh()
 {
-	//std::string cpkName = TCHAR_TO_UTF8(*_cpkName);
-	//std::string dirName = TCHAR_TO_UTF8(*_dirName);
-	//std::string fileName = TCHAR_TO_UTF8(*_fileName);
-	//_mv3Wrapper->Init(cpkName, dirName, fileName);
 	//_mv3Wrapper->Init("basedata.cpk", "ROLE\\104", "C09.MV3");
 	_mv3Wrapper->Init(TCHAR_TO_UTF8(*_cpkName), TCHAR_TO_UTF8(*_dirName), TCHAR_TO_UTF8(*_fileName));
 	
