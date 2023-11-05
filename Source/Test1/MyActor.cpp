@@ -84,14 +84,8 @@ void AMyActor::Tick(float DeltaTime)
 		_frameElapsedTime += DeltaTime;
 		if (_frameElapsedTime >= _frameKeepTime)
 		{
-			_frameElapsedTime -= _frameKeepTime;
-
-			// Process to next frame
-			_frameIndex++;
-			if (_frameIndex >= _mv3Wrapper->GetFrameCount())
-			{
-				_frameIndex %= _mv3Wrapper->GetFrameCount();
-			}
+			_frameElapsedTime -= (int)(_frameElapsedTime / _frameKeepTime) * _frameKeepTime;
+			ProcessToNextFrame();
 		}
 	}
 }
@@ -149,13 +143,30 @@ UMaterialInstanceDynamic* AMyActor::CreateSubMeshMaterial(int subMeshIndex)
 
 void AMyActor::UpdateSubMesh(int subMeshIndex)
 {
+	// This frame
 	TArray<FVector> vertices;
 	TArray<FVector> normals;
 	TArray<int32_t> triangles;
 	TArray<FVector2D> uv0;
-
 	_mv3Wrapper->GetVerticesAtFrameIndex(subMeshIndex, _frameIndex, vertices, triangles, normals, uv0);
 
+
+	// Next frame
+	int nextFrameIndex = GetNextFrameIndex(_frameIndex);
+	TArray<FVector> verticesNextFrame;
+	_mv3Wrapper->GetVerticesAtFrameIndex(subMeshIndex, nextFrameIndex, verticesNextFrame, triangles, normals, uv0);
+
+	// Lerp 
+	float pct = _frameElapsedTime / _frameKeepTime;
+	if (pct < 0) pct = 0;
+	if (pct > 1) pct = 1;
+	for(int i = 0;i < vertices.Num();i++)
+	{
+		FVector result = vertices[i] + (verticesNextFrame[i] - vertices[i]) * pct;
+		vertices[i] = result;
+	}
+
+	// Refresh mesh
 	_proceduralMesh->UpdateMeshSection(
 		subMeshIndex,
 		vertices,
@@ -164,4 +175,30 @@ void AMyActor::UpdateSubMesh(int subMeshIndex)
 		TArray<FColor>(),
 		TArray<FProcMeshTangent>()
 	);
+}
+
+void AMyActor::ProcessToNextFrame()
+{
+	_frameIndex++;
+	if (_frameIndex >= _mv3Wrapper->GetFrameCount())
+	{
+		_frameIndex %= _mv3Wrapper->GetFrameCount();
+	}
+}
+
+int AMyActor::GetNextFrameIndex(int frameIndex)
+{
+	if (_mv3Wrapper != nullptr && _mv3Wrapper->HasLoaded())
+	{
+		int result = frameIndex + 1;
+		if (result >= (int)_mv3Wrapper->GetFrameCount())
+		{
+			result = 0;
+		}
+		return result;
+	}
+	else
+	{
+		return frameIndex;
+	}
 }

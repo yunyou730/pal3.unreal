@@ -73,6 +73,10 @@ namespace pal3
 		TArray<FVector>& normals,
 		TArray<FVector2D>& uv0)
 	{
+		vertices.Empty();
+		triangles.Empty();
+		normals.Empty();
+		uv0.Empty();
 
 		int32_t vertCount = _mv3->meshes[subMeshIndex]->keyFrames[frameIndex]->gameBoxVertices.size();		
 		for (auto it : _mv3->meshes[subMeshIndex]->keyFrames[frameIndex]->gameBoxVertices)

@@ -44,6 +44,10 @@ private:
 	UMaterialInstanceDynamic* CreateSubMeshMaterial(int subMeshIndex);
 	void UpdateSubMesh(int subMeshIndex);
 
+	void ProcessToNextFrame();
+	//int GetPrevFrameIndex(int frameIndex);
+	int GetNextFrameIndex(int frameIndex);
+
 protected:
 	pal3::Mv3Wrapper* _mv3Wrapper = nullptr;
 	USceneComponent* _rootComponent = nullptr;
