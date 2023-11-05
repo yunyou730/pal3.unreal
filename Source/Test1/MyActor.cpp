@@ -33,21 +33,36 @@ AMyActor::AMyActor()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Root Component
 	_rootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("EmptyComponent"));
 	SetRootComponent(_rootComponent);
 
-
+	// Hold Sample Material 
 	ConstructorHelpers::FObjectFinder<UMaterialInterface> finder(TEXT("/Game/Test/TestMat"));
 	if (finder.Succeeded())
 	{
 		_materialSample = finder.Object;
 	}
-	
-	auto rawAssetCache = pal3::Game::Instance()->GetService<pal3::RawAssetCache>();
-	_mv3 = rawAssetCache->GetMv3("basedata.cpk","ROLE\\104\\C09.MV3");
-	PreCreateSubMeshes();
+
+	// Create ProceduralMeshComponent
+	_proceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("pal3_procedural_mesh"));
+	_proceduralMesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+
+	// Mv3 Wrapper
+	_mv3Wrapper = new pal3::Mv3Wrapper();
 }
 
+void AMyActor::SetSpawnParam(FString cpkName, FString dirName, FString fileName)
+{
+	_cpkName = cpkName;
+	_dirName = dirName;
+	_fileName = fileName;
+}
+
+void AMyActor::SetFrameSpeed(int32 framePlaySpeed)
+{
+	_framePlaySpeed = framePlaySpeed;
+}
 
 // Called when the game starts or when spawned
 void AMyActor::BeginPlay()
@@ -59,101 +74,88 @@ void AMyActor::BeginPlay()
 void AMyActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UE_LOG(LogTemp, Warning, TEXT("ayyTick3"));
 
-}
-
-void AMyActor::PreCreateSubMeshes()
-{
-	for (size_t i = 0;i < _mv3->meshes.size();i++)
+	/*_elapsedTime += DeltaTime;*/
+	if (_mv3Wrapper != nullptr && _mv3Wrapper->HasLoaded())
 	{
-		auto ProceduralMeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
-		ProceduralMeshComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-		_proceduralMeshes.Push(ProceduralMeshComponent);
+		_frameIndex++;
+		if (_frameIndex >= _mv3Wrapper->GetFrameCount())
+		{
+			_frameIndex %= _mv3Wrapper->GetFrameCount();
+		}
 	}
 }
 
-UProceduralMeshComponent* AMyActor::GetSubMeshAtIndex(int32 index)
+void AMyActor::LoadAndCreateMesh()
 {
-	return _proceduralMeshes[index];
+	//std::string cpkName = TCHAR_TO_UTF8(*_cpkName);
+	//std::string dirName = TCHAR_TO_UTF8(*_dirName);
+	//std::string fileName = TCHAR_TO_UTF8(*_fileName);
+	//_mv3Wrapper->Init(cpkName, dirName, fileName);
+	//_mv3Wrapper->Init("basedata.cpk", "ROLE\\104", "C09.MV3");
+	_mv3Wrapper->Init(TCHAR_TO_UTF8(*_cpkName), TCHAR_TO_UTF8(*_dirName), TCHAR_TO_UTF8(*_fileName));
+	
+	for (uint32_t subMeshIndex = 0;subMeshIndex < _mv3Wrapper->GetSubMeshCount();subMeshIndex++)
+	{
+		UMaterialInstanceDynamic* materialInstance = CreateSubMeshMaterial(subMeshIndex);
+		_proceduralMesh->SetMaterial(subMeshIndex, materialInstance);
+		
+		CreateSubMesh(subMeshIndex);
+	}
 }
 
 void AMyActor::UpdateMeshes()
 {
-	UTexture2D* texture = LoadTexture();
-
-	for (size_t subMeshIndex = 0;subMeshIndex < _mv3->meshes.size();subMeshIndex++)
-	{	
-		UProceduralMeshComponent* proceduralMesh = GetSubMeshAtIndex(subMeshIndex);
-		UpdateSubMesh(_mv3, proceduralMesh,subMeshIndex);
-
-		// Setup material
-		UMaterialInstanceDynamic* materialInstance = UMaterialInstanceDynamic::Create(_materialSample, GetTransientPackage());
-		// setup texture
-		materialInstance->SetTextureParameterValue(FName("TexParam"), texture);
-
-		// assign material to mesh 
-		proceduralMesh->SetMaterial(0, materialInstance);
+	for (uint32_t subMeshIndex = 0; subMeshIndex < _mv3Wrapper->GetSubMeshCount(); subMeshIndex++)
+	{
+		UpdateSubMesh(subMeshIndex);
 	}
 }
 
-void AMyActor::UpdateSubMesh(pal3::Mv3* mv3, UProceduralMeshComponent* proceduralMesh,int subMeshIndex)
+void AMyActor::CreateSubMesh(int subMeshIndex)
 {
-	int frameIndex = 0;
-
-	int32 vertCount = mv3->meshes[subMeshIndex]->keyFrames[frameIndex]->gameBoxVertices.size();
 	TArray<FVector> vertices;
 	TArray<FVector> normals;
-	for (auto it : mv3->meshes[subMeshIndex]->keyFrames[frameIndex]->gameBoxVertices)
-	{
-		vertices.Add(FVector(it.x, it.y, it.z));
-		normals.Add(FVector(0, 0, 1));		// @miao @temp; // normal we should re-calculate it 
-	}
-
-	TArray<int32> triangles;
-	//for (auto it : mv3->meshes[0]->gameboxTriangles)
-	//{
-	//	triangles.Add(it);
-	//}
-
-	// @miao @todo
-	// try to adjust triangle index
-	uint32 triangleCount = mv3->meshes[0]->gameboxTriangles.size() / 3;
-	for (uint32 triangleIdx = 0;triangleIdx < triangleCount;triangleIdx++)
-	{
-		uint32 idx1 = triangleIdx * 3;
-		uint32 idx2 = idx1 + 2;
-		uint32 idx3 = idx1 + 1;
-
-		triangles.Add(mv3->meshes[0]->gameboxTriangles[idx1]);
-		triangles.Add(mv3->meshes[0]->gameboxTriangles[idx2]);
-		triangles.Add(mv3->meshes[0]->gameboxTriangles[idx3]);
-	}
-
+	TArray<int32_t> triangles;
 	TArray<FVector2D> uv0;
-	for (auto it : mv3->meshes[0]->UVs)
-	{
-		uv0.Add(FVector2D(it.x, it.y));
-	}
 
-	pal3ext::GameBoxConverter::ConvertVertices(vertices);
+	_mv3Wrapper->GetVerticesAtFrameIndex(subMeshIndex, _frameIndex, vertices, triangles, normals, uv0);
 
-	proceduralMesh->CreateMeshSection(0,
+	_proceduralMesh->CreateMeshSection(subMeshIndex,
+				vertices,
+				triangles,
+				normals,
+				uv0,
+				TArray<FColor>(),
+				TArray<FProcMeshTangent>(),
+				false);
+}
+
+UMaterialInstanceDynamic* AMyActor::CreateSubMeshMaterial(int subMeshIndex)
+{
+	UMaterialInstanceDynamic* materialInstance = UMaterialInstanceDynamic::Create(_materialSample, GetTransientPackage());
+	pal3::RawTexture* rawTexture = _mv3Wrapper->GetTextureAtMeshIndex(subMeshIndex);
+	UTexture2D* texture = pal3::RenderUtils::CreateTexture(rawTexture);
+	materialInstance->SetTextureParameterValue(FName("TexParam"), texture);
+
+	return materialInstance;
+}
+
+void AMyActor::UpdateSubMesh(int subMeshIndex)
+{
+	TArray<FVector> vertices;
+	TArray<FVector> normals;
+	TArray<int32_t> triangles;
+	TArray<FVector2D> uv0;
+
+	_mv3Wrapper->GetVerticesAtFrameIndex(subMeshIndex, _frameIndex, vertices, triangles, normals, uv0);
+
+	_proceduralMesh->UpdateMeshSection(
+		subMeshIndex,
 		vertices,
-		triangles,
 		normals,
 		uv0,
 		TArray<FColor>(),
-		TArray<FProcMeshTangent>(),
-		false);
-}
-
-UTexture2D* AMyActor::LoadTexture()
-{
-	auto rawAssetCache = pal3::Game::Instance()->GetService<pal3::RawAssetCache>();
-	pal3::RawTexture* rawTexture = rawAssetCache->GetTexture("basedata.cpk","ROLE\\104\\104.tga");
-
-	UTexture2D* texture = pal3::RenderUtils::CreateTexture(rawTexture);
-	//pal3::RenderUtils::SaveTextureToDisk("D:\\test2.png", rawTexture);
-	return texture;
+		TArray<FProcMeshTangent>()
+	);
 }

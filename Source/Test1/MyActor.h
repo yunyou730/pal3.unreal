@@ -7,12 +7,10 @@
 #include "CustomMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "StaticMeshOperations.h"
+#include "Pal3Ext/Mv3Wrapper.h"
 
 #include "MyActor.generated.h"
 
-namespace pal3 {
-	struct Mv3;
-}
 
 UCLASS()
 class TEST1_API AMyActor : public AActor
@@ -20,34 +18,53 @@ class TEST1_API AMyActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AMyActor();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "pal3")
+	void SetSpawnParam(FString cpkName,FString dirName,FString fileName);
+
+	UFUNCTION(BlueprintCallable, Category = "pal3")
+	void SetFrameSpeed(int32 framePlaySpeed);
+
+	UFUNCTION(BlueprintCallable, Category = "pal3")
+	void LoadAndCreateMesh();
+
+	UFUNCTION(BlueprintCallable, Category = "pal3")
 	void UpdateMeshes();
 
 private:
-	UTexture2D* LoadTexture();
-	void UpdateSubMesh(pal3::Mv3* mv3, UProceduralMeshComponent* proceduralMesh,int subMeshIndex);
-
-private:
-	void PreCreateSubMeshes();
-	UProceduralMeshComponent* GetSubMeshAtIndex(int32 index);
+	void CreateSubMesh(int subMeshIndex);
+	UMaterialInstanceDynamic* CreateSubMeshMaterial(int subMeshIndex);
+	void UpdateSubMesh(int subMeshIndex);
 
 protected:
-	pal3::Mv3* _mv3 = nullptr;
+	pal3::Mv3Wrapper* _mv3Wrapper = nullptr;
 	USceneComponent* _rootComponent = nullptr;
 	UMaterialInterface* _materialSample = nullptr;
-
+	
 	UPROPERTY(VisibleAnywhere)
-	TArray<UProceduralMeshComponent*>	_proceduralMeshes;
+	UProceduralMeshComponent* _proceduralMesh;
+
+	uint32_t	_frameIndex = 0;
+	//float	_elapsedTime = 0.0f;
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Pal3")
+	int32 _framePlaySpeed = 3;
+
+	UPROPERTY(EditAnywhere, Category = "Pal3")
+	FString _cpkName;
+
+	UPROPERTY(EditAnywhere, Category = "Pal3")
+	FString _dirName;
+
+	UPROPERTY(EditAnywhere, Category = "Pal3")
+	FString _fileName;
 };

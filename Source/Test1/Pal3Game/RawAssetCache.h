@@ -32,6 +32,8 @@ namespace pal3
 		RawTexture* GetTexture(const std::string& cpkFileName, const std::string& relativePath);
 
 	private:
+		std::string PreProcessingPath(const std::string& path);
+
 		Mv3* ReadMv3(const std::string& cpkFileName, const std::string& relativePath);
 		RawTexture* LoadRawTexture(const std::string& cpkFileName, const std::string& relativePath);
 

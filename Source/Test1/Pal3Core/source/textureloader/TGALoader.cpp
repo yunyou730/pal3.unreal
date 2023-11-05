@@ -36,21 +36,29 @@ namespace pal3
 			for (size_t i = 0; i < pixels; i++)
 			{
 				// RGBA for one pixel
-				//uint8_t r = BinReader::Read<uint8_t>(p, ptr);
-				//uint8_t g = BinReader::Read<uint8_t>(p, ptr);
-				//uint8_t b = BinReader::Read<uint8_t>(p, ptr);
-				//uint8_t a = BinReader::Read<uint8_t>(p, ptr);
-
 				uint8_t a = BinReader::Read<uint8_t>(p, ptr);
 				uint8_t b = BinReader::Read<uint8_t>(p, ptr);
 				uint8_t g = BinReader::Read<uint8_t>(p, ptr);
 				uint8_t r = BinReader::Read<uint8_t>(p, ptr);
 
-				//r = 0;
-				//g = 0;
-				//b = 255;
-				//a = 255;
-
+				// r = 0;g = 0;b = 255;a = 255;
+				ret->bytes.push_back(r);
+				ret->bytes.push_back(g);
+				ret->bytes.push_back(b);
+				ret->bytes.push_back(a);
+			}
+		}
+			break;
+		case 24:
+		{
+			ret->bytes.reserve(4 * pixels);
+			for (size_t i = 0; i < pixels; i++)
+			{
+				// RGB for one pixel
+				uint8_t r = BinReader::Read<uint8_t>(p, ptr);
+				uint8_t b = BinReader::Read<uint8_t>(p, ptr);
+				uint8_t g = BinReader::Read<uint8_t>(p, ptr); 
+				uint8_t a = 255;
 
 				ret->bytes.push_back(r);
 				ret->bytes.push_back(g);
@@ -58,9 +66,6 @@ namespace pal3
 				ret->bytes.push_back(a);
 			}
 		}
-		
-			break;
-		case 24:
 			break;
 		default:
 			break;
